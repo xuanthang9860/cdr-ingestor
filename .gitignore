@@ -1,0 +1,2 @@
+./cmd/db/pg_data
+./cmd/db/rabbitmq_data
