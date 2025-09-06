@@ -1,0 +1,31 @@
+app:
+  host: 0.0.0.0
+  port: 8080
+
+rabbitmq:
+  url: amqp://guest:guest@rabbitmq:5672/
+  queue_name: cdr_queue
+
+postgres:
+  host: postgresql
+  port: 5432
+  user: cdr
+  password: admin
+  dbname: cdr
+
+logger:
+  file:
+    level: debug # debug, info, warn, error, fatal
+    enabled: true
+    path: ./log/cdr-ingestor.log
+    maxSize: 512 # MB
+    maxBackups: 20 # days
+    maxAge: 30 # days
+    compress: true
+    callerDebug: true
+    pretty: true
+  console:
+    level: debug # debug, info, warn, error, fatal
+    pretty: true
+    callerDebug: true
+    enabled: true

@@ -1,40 +1,52 @@
 package main
 
 import (
-	"cdr/module/core/model"
-	"cdr/module/core/queue"
-	"cdr/module/core/transport/http/handler"
+	"cdr/internal/config"
+	"cdr/internal/model"
+	"cdr/internal/queue"
+	"cdr/internal/transport/http/handler"
 	"context"
-	"log"
+	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
 
+	"github.com/cc-integration-team/cc-pkg/v2/pkg/logger"
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
 func main() {
-	dsn := "host=localhost user=cdr password=admin dbname=cdr port=5432"
+	cfg, err := config.LoadConfig("./config")
+	if err != nil {
+		logger.Fatalf("failed to load config: %v", err)
+	}
+	logger.SetDefaultLogger(logger.NewZerologAdapter(cfg.Logger))
+
+	postgresCfg := cfg.Postgres
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%d sslmode=disable TimeZone=UTC",
+		postgresCfg.Host, postgresCfg.User, postgresCfg.Password, postgresCfg.DBName, postgresCfg.Port)
+
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
-		panic("failed to connect database")
+		logger.Fatalf("failed to connect database: %v", err)
 	}
 
 	db.AutoMigrate(&model.CDR{})
-
 	handler.RegisterDB(db)
 
 	// Init RabbitMQ (assume localhost)
-	amqpURL := "amqp://guest:guest@localhost:5672/"
-	rb, err := queue.NewRabbit(amqpURL, "cdr_queue")
+
+	rabbitCfg := cfg.RabbitMQ
+	amqpURL := rabbitCfg.URL
+	rb, err := queue.NewRabbit(amqpURL, rabbitCfg.QueueName)
 	if err != nil {
-		log.Printf("warning: failed to connect rabbitmq: %v - continuing without queue", err)
+		logger.Fatalf("failed to connect rabbitmq: %v", err)
 	} else {
 		// start consumer
 		if err := rb.ConsumeAndProcess(db); err != nil {
-			log.Printf("failed to start consumer: %v", err)
+			logger.Fatalf("failed to start consumer: %v", err)
 		}
 	}
 
@@ -47,12 +59,12 @@ func main() {
 
 	go func() {
 		if err := r.Run(":8080"); err != nil {
-			log.Fatalf("server exited: %v", err)
+			logger.Fatalf("failed to start server: %v", err)
 		}
 	}()
 
 	<-srvCtx.Done()
-	log.Println("shutting down")
+	logger.Infof("shutting down")
 	if rb != nil {
 		rb.Close()
 	}

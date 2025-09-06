@@ -3,12 +3,12 @@ package queue
 import (
 	"context"
 	"encoding/json"
-	"log"
 
-	"cdr/module/core/model"
+	"cdr/internal/model"
 
 	"gorm.io/gorm"
 
+	"github.com/cc-integration-team/cc-pkg/v2/pkg/logger"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
@@ -80,7 +80,7 @@ func (r *Rabbit) ConsumeAndProcess(db *gorm.DB) error {
 		for d := range msgs {
 			var cdr model.CDR
 			if err := json.Unmarshal(d.Body, &cdr); err != nil {
-				log.Printf("failed to unmarshal cdr: %v", err)
+				logger.Errorf("failed to unmarshal cdr: %v", err)
 				d.Nack(false, false)
 				continue
 			}
@@ -89,7 +89,7 @@ func (r *Rabbit) ConsumeAndProcess(db *gorm.DB) error {
 			var existing model.CDR
 			tx := db.Where("call_id = ?", cdr.CallID).Assign(cdr).FirstOrCreate(&existing)
 			if tx.Error != nil {
-				log.Printf("db upsert error: %v", tx.Error)
+				logger.Errorf("db upsert error: %v", tx.Error)
 				d.Nack(false, true) // requeue on DB error
 				continue
 			}

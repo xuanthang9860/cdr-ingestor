@@ -4,9 +4,16 @@ services:
     container_name: postgresql
     env_file: .env
     networks:
-      - namitech_voip_network
+      - etelecom_voip_network
     ports:
       - 5432:5432
+    volumes:
+      - ./pg_data:/var/lib/postgresql/data
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "30m"
+        max-file: "3"
 
   rabbitmq:
     image: rabbitmq:3.11-management
@@ -19,15 +26,16 @@ services:
       - 5672:5672    # AMQP
       - 15672:15672  # Management UI
     volumes:
-      - rabbitmq_data:/var/lib/rabbitmq
+      - ./rabbitmq_data:/var/lib/rabbitmq
     networks:
-      - namitech_voip_network
+      - etelecom_voip_network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "30m"
+        max-file: "3"
 networks:
-  namitech_voip_network:
+  etelecom_voip_network:
     external: true
     driver: bridge
-# docker network create --subnet=172.22.0.0/16 namitech_voip_network
-
-volumes:
-  rabbitmq_data:
-    driver: local
+# docker network create --subnet=172.22.0.0/16 etelecom_voip_network

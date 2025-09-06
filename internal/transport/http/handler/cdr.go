@@ -1,19 +1,12 @@
 package handler
 
 import (
-	"cdr/module/core/model"
-	"cdr/module/core/queue"
+	"cdr/internal/model"
+	"cdr/internal/queue"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 )
-
-var DB *gorm.DB
-
-func RegisterDB(db *gorm.DB) {
-	DB = db
-}
 
 func APICallHandler(r *gin.Engine) {
 	group := r.Group("/cdr")
