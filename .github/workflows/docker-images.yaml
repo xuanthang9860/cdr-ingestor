@@ -25,7 +25,7 @@ jobs:
 
       - name: Check required variables
         run: |
-          if [ -z "${{ vars.DOCKERHUB_REGISTRY }}" ] || [ -z "${{ env.DOCKER_NAMESPACE }}" ] || [ -z "${{ env.DOCKER_IMAGE_NAME }}" ]; then
+          if [ -z "${{ vars.DOCKERHUB_REGISTRY }}" ] || [ -z "${{ vars.DOCKER_NAMESPACE }}" ] || [ -z "${{ env.DOCKER_IMAGE_NAME }}" ]; then
             echo "Error: Missing required environment variables"
             exit 1
           fi
@@ -40,7 +40,7 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ${{ vars.DOCKERHUB_REGISTRY }}
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_ACCESS_TOKEN }}
 
       - name: Setup Docker Buildx
