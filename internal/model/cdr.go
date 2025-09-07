@@ -50,4 +50,4 @@ type CDR struct {
 	UpdatedAt *time.Time
 }
 
-// func (CDR) TableName() string { return "cdr" }
+func (CDR) TableName() string { return "cdr" }

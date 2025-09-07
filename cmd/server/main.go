@@ -33,7 +33,9 @@ func main() {
 		logger.Fatalf("failed to connect database: %v", err)
 	}
 
-	db.AutoMigrate(&model.CDR{})
+	if err := db.AutoMigrate(&model.CDR{}); err != nil {
+		logger.Fatalf("failed to migrate database: %v", err)
+	}
 	handler.RegisterDB(db)
 
 	// Init RabbitMQ (assume localhost)
