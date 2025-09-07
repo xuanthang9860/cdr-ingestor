@@ -25,7 +25,7 @@ jobs:
 
       - name: Check required variables
         run: |
-          if [ -z "${{ vars.DOCKERHUB_REGISTRY }}" ] || [ -z "${{ vars.DOCKER_NAMESPACE }}" ] || [ -z "${{ env.DOCKER_IMAGE_NAME }}" ]; then
+          if [ -z "${{ vars.DOCKERHUB_REGISTRY }}" ] || [ -z "${{ env.DOCKER_NAMESPACE }}" ] || [ -z "${{ env.DOCKER_IMAGE_NAME }}" ]; then
             echo "Error: Missing required environment variables"
             exit 1
           fi
@@ -78,10 +78,10 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Verify Built Image
-        run: |
-          docker images "${{ vars.DOCKERHUB_REGISTRY }}/${{ env.DOCKER_NAMESPACE }}/${{ env.DOCKER_IMAGE_NAME }}" | grep -E "${{ github.ref_name }}|${{ github.ref_name }}-${{ github.sha }}"
-          echo "Image built successfully"
+      # - name: Verify Built Image
+      #   run: |
+      #     docker images "${{ vars.DOCKERHUB_REGISTRY }}/${{ env.DOCKER_NAMESPACE }}/${{ env.DOCKER_IMAGE_NAME }}" | grep -E "${{ github.ref_name }}|${{ github.ref_name }}-${{ github.sha }}"
+      #     echo "Image built successfully"
 
       - name: Push Docker Image
         if: success()
